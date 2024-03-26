@@ -1,0 +1,117 @@
+using HarmonyLib;
+using ModLoader;
+using ModLoader.Helpers;
+
+namespace SFMP
+{
+    public class Main : Mod
+    {
+
+        public override string ModNameID => "SFMP100000000000";
+        public override string DisplayName => "Spaceflight Multiplayer";
+        public override string Author => "Bernardo1234";
+        public override string MinimumGameVersionNecessary => "1.5.10.2";
+        public override string ModVersion => "v1.0.0";
+        public override string Description => "Multiplayer Mod I Made!";
+
+        // This initializes the patcher. This is required if you use any Harmony patches.
+        static Harmony patcher;
+
+        public override void Load()
+        {
+            // This tells the loader what to run when your mod is loaded.
+        }
+
+        public override void Early_Load()
+        {
+            // This method runs before anything from the game is loaded. This is where you should apply your patches, as shown below.
+
+            // The patcher uses an ID formatted like a web domain.
+            patcher = new Harmony("example.foo.bar");
+
+            // This pulls your Harmony patches from everywhere in the namespace and applies them.
+            patcher.PatchAll();
+        }
+    }
+}
+
+using SFS.UI;
+using SFS.UI.ModGUI;
+using UnityEngine;
+using Type = SFS.UI.ModGUI.Type;
+
+namespace SpaceflightMultiplayer
+{
+    public class NewServer
+    {
+        // Create a GameObject for your window to attach to.
+        static GameObject windowHolder;
+
+        // Random window ID to avoid conflicts with other mods.
+        static readonly int MainWindowID = Builder.GetRandomID();
+
+        static Window window;
+        static RectInt windowRect = new RectInt(0, 0, 300, 150); // x-position, y-position, width, height
+        /*
+        Call this method when you want to show your UI.
+        */
+        public static void ShowGUI()
+        {
+            // Create the window holder, attach it to the currently active scene so it's removed when the scene changes.
+            windowHolder = Builder.CreateHolder(Builder.SceneToAttach.CurrentScene, "MyHolderName");
+
+            window = Builder.CreateWindow(windowHolder.transform, MainWindowID, windowRect.width, windowRect.height, windowRect.x, windowRect.y, true, true, 0.95f, "My Window");
+
+            // Create a layout group for the window. This will tell the GUI builder how it should position elements of your UI.
+            window.CreateLayoutGroup(Type.Vertical);
+
+            Builder.CreateButtonWithLabel(window, 290, 50, 0, 0, "Button Label", "Multiplayer", ButtonMethod);
+        }
+
+        /*
+        Method to pass into the button element to give it functionality
+        */
+        static void ButtonMethod()
+        {
+            MsgDrawer.main.Log("Hello Collaborators");
+        }
+    }
+}
+
+public override Load()
+{
+    /*
+    The below formatting is called a "lambda" method, it allows you to define a method in place of where
+    a pre-defined method would be accepted as a parameter. It is useful in this case because you can use it
+    to make it call more than one method without repeatedly adding to OnBuildSceneLoaded.
+    */
+    SceneHelper.OnBuildSceneLoaded += () =>
+    {
+        NewClass.ShowGUI();
+    };
+}
+
+using HarmonyLib;
+using UnityEngine;
+using System;
+// Replace SFS.Namespace with the namespace of the code you'd like to change.
+using SFS.Namespace
+
+namespace SpaceflightMultiplayer
+{
+    [HarmonyPatch(typeof(OriginalClassName), "SpaceflightSimulatorMultiplayer")]
+    public class MyPatch
+    {
+        [HarmonyPrefix]
+        public static (insert return type here) Prefix()
+        {
+            // Code will run before the original method.
+        }
+
+        [HarmonyPostfix]
+        public static void Postfix()
+        {
+            // Code will run after the original method. This will run regardless of if the original method or your prefix has a return.
+        }
+    }
+}
